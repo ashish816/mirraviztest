@@ -21,7 +21,6 @@
         var socket = io();
         socket.on('chat message', function(msg){
             if(msg != "play"){
-                alert(msg);
                 $("#videoplayer").html('<source src="'+msg+'"></source>' );
                 document.getElementById("videoplayer").play();
             }
