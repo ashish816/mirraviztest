@@ -1,0 +1,16 @@
+{
+  "name": "TestSocket",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": "4.5.0"
+  },
+  "dependencies": {
+    "ejs": "*",
+    "express": "3.2.6",
+    "socket.io": "^1.4.8"
+  }
+}
