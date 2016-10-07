@@ -20,10 +20,44 @@
       <script>
         var socket = io();
         socket.on('chat message', function(msg){
-            if(msg != "play"){
-                $("#videoplayer").html('<source src="'+msg+'"></source>' );
-                document.getElementById("videoplayer").play();
-            }
+            // if(msg != "play"){
+            //     $("#videoplayer").html('<source src="'+msg+'"></source>' );
+            //     document.getElementById("videoplayer").play();
+            // }
+
+            // if (msg){
+
+                alert(msg);
+                alert(msg.sex);
+                alert(msg.range);
+
+
+
+                var video = document.getElementById("videoplayer");
+
+                var videoPathFemale = "Video/deliciousdelight.mp4"
+                var videoPathMale = "Video/keeptrim.mp4"
+                if (msg.sex == "male") {
+                    if (msg.range == "yes") {
+                        $("#videoplayer").html('<source src="'+videoPathMale+'"></source>' );
+                        video.load();
+                        video.play();
+                    } else {
+                         video.pause();
+                    }
+                } else {
+                        if (msg.range == "yes") {
+                            $("#videoplayer").html('<source src="'+videoPathFemale+'"></source>' );
+                            video.load();
+                            video.play();
+                        } else {
+                             video.pause();
+                        }
+                }
+
+            // }
+
+
         });
 
         function sendRequest() {
@@ -36,7 +70,7 @@
       </script>
       <div id="messages">
           <!-- <video id="videoplayer" width="480" height="360"></video> -->
-          <video id="videoplayer" preload="true" autoplay="autoplay" controls=""></video>
+          <video id="videoplayer" preload="false" autoplay="autoplay" controls=""></video>
       </div>
 
       <!-- <div>

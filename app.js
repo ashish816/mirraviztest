@@ -33,11 +33,13 @@ if ('development' == app.get('env')) {
 var connection = false;
 app.get('/', routes.index);
 app.get('/users', user.list);
-app.get('/sendRequest', function(req, res) {
-    query = req.query.video;
-    console.log(query);
+app.post('/sendRequest', function(req, res) {
+    var sex = req.param("sex");
+    var inrange = req.param("inrange");
+
+    console.log(sex);
     if(connection){
-        io.emit('chat message', query);
+        io.emit('chat message', { range : inrange, sex : sex});
 
     }else{
         console.log('No client connected');
