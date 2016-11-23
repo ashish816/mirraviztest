@@ -40,6 +40,8 @@ app.post('/sendRequest', function(req, res) {
     console.log(sex);
     if(connection){
         io.emit('chat message', { range : inrange, sex : sex});
+        res.end("Success");
+        res.send();
 
     }else{
         console.log('No client connected');
@@ -51,7 +53,7 @@ io.on('connection', function(socket){
 });
 
 
-
-/*http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
-});*/
+// 
+// http.createServer(app).listen(app.get('port'), function(){
+//   console.log('Express server listening on port ' + app.get('port'));
+// });

@@ -11,10 +11,25 @@
      #messages { list-style-type: none; margin: 0; padding: 0; }
      #messages li { padding: 5px 10px; }
      #messages li:nth-child(odd) { background: #eee; }
+
+     #video, #canvas {
+   margin-left: 230px;
+   margin-top: 120px;
+   position: absolute;
+ }
    </style>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <script src="/socket.io-client/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="/tracking/build/tracking-min.js"></script>
+  <script src="/tracking/build/data/face-min.js"></script>
+   <!-- <script src="../node_modules/dat.gui/build/dat.gui.min.js"></script> -->
+  <!-- <script src="/tracking/assets/stats.min.js"></script> -->
+  <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+     <script type="text/javascript" src="/Facepp/facepp-sdk.min.js"></script>
+     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
+
   </head>
   <body>
       <script>
@@ -48,10 +63,6 @@
                              video.pause();
                         }
                 }
-
-            // }
-
-
         });
 
         function sendRequest() {
@@ -61,14 +72,264 @@
             });
         }
 
+
+        window.onload = function() {
+
+    var counter = 0;
+
+     var video = document.getElementById('video');
+     var canvas = document.getElementById('canvas');
+     var context = canvas.getContext('2d');
+
+     var canvas1 = document.getElementById('canvas1');
+     var context1 = canvas1.getContext('2d');
+
+     var tracker = new tracking.ObjectTracker('face');
+     tracker.setInitialScale(4);
+     tracker.setStepSize(2);
+     tracker.setEdgesDensity(0.1);
+     tracking.track('#video', tracker, { camera: true });
+     tracker.on('track', function(event) {
+       context.clearRect(0, 0, canvas.width, canvas.height);
+       event.data.forEach(function(rect) {
+
+         context.strokeStyle = '#a64ceb';
+         context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+         context.font = '11px Helvetica';
+         context.fillStyle = "#fff";
+         context.fillText('x: ' + rect.x + 'px', rect.x + rect.width + 5, rect.y + 11);
+         context.fillText('y: ' + rect.y + 'px', rect.x + rect.width + 5, rect.y + 22);
+        //  alert("Recognized");
+
+        console.time("rectangle Created");
+
+        context1.drawImage(video, 0, 0, 640, 480);
+
+
+        if (counter == 0) {
+            var binarydata = makeBlob(canvas1);
+            //
+            // console.log("BLOB SIze"+ binarydata.size);
+            //
+            //
+             counter = 1;
+            // console.timeEnd("rectangle Created");
+
+
+            console.time("callMicrosoftService");
+            // console.time("callfaceplusplus");
+
+
+             callMicrosoftService(binarydata);
+            // callFacePlusPlus(binarydata);
+            // microsoftAPiUsingURl();
+
+        }
+       });
+     });
+   };
+
+   function convertCanvasToImage(canvas) {
+	var image = new Image();
+	image.src = canvas.toDataURL("image/png");
+	return image;
+}
+
+function callMicrosoftService(data) {
+    var params = {
+        // Request parameters
+        "returnFaceId": "true",
+        "returnFaceLandmarks": "false",
+        "returnFaceAttributes": "gender,age",
+    };
+
+    jQuery.ajax({
+        url: "https://api.projectoxford.ai/face/v1.0/detect?" + $.param(params),
+        beforeSend: function(xhrObj){
+            // Request headers
+            xhrObj.setRequestHeader("Content-Type","application/octet-stream");
+            xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key","b24fbb44572949e1a2f03794fb1196b4");
+        },
+        type: "POST",
+        // Request body
+        data: data,
+        processData: false,
+
+    })
+    .done(function(data) {
+        console.log(data);
+
+        console.timeEnd("callMicrosoftService");
+
+        // parseData(data);
+
+    })
+    .fail(function(error) {
+        console.log(error);
+        alert("error");
+    });
+}
+
+function microsoftAPiUsingURl() {
+
+    var params = {
+                // Request parameters
+                "returnFaceId": "true",
+                "returnFaceLandmarks": "false",
+                "returnFaceAttributes": "age,gender"
+            };
+
+            $.ajax({
+                url: "https://api.projectoxford.ai/face/v1.0/detect?" + $.param(params),
+                beforeSend: function(xhrObj){
+                    // Request headers
+                    xhrObj.setRequestHeader("Content-Type","application/json");
+                    xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key","19a924d9c09e4b6e8e657629194c6588");
+                },
+                type: "POST",
+                // Request body
+                data: { "url" : "http://s14.postimg.org/mnqqgr5f5/Screen_Shot_2016_11_15_at_10_16_57_AM.png"}
+            })
+            .done(function(data) {
+                alert("success");
+            })
+            .fail(function(error) {
+                console.log(error);
+                alert("error");
+            });
+}
+
+
+function callFacePlusPlus(data) {
+    var params = {
+        // Request parameters
+        "api_secret": "DvsVJNV7O6sgvk6x1-K7nnZd7QyYgTDm",
+        "api_key": "3d981a0b0cf82c2e5dfcf68d14447be8",
+        "url": "http://s14.postimg.org/mnqqgr5f5/Screen_Shot_2016_11_15_at_10_16_57_AM.png"
+    };
+
+    jQuery.ajax({
+        url: "https://apius.faceplusplus.com/detection/detect?" + $.param(params),
+        beforeSend: function(xhrObj){
+            // Request headers
+            xhrObj.setRequestHeader("Content-Type","application/json");
+        },
+        type: "POST",
+        // Request body
+        img: data,
+        processData: false,
+
+    })
+    .done(function(data) {
+        console.log(data);
+
+        console.timeEnd("callFaceplusplus");
+
+        // parseData(data);
+
+    })
+    .fail(function() {
+        alert("error");
+    });
+}
+
+
+function parseData(data) {
+    var firstface = data[0];
+    console.log(firstface);
+    var facialAttributes = firstface["faceAttributes"];
+    var age = facialAttributes["age"];
+    // alert(age);
+
+    var gender = facialAttributes["gender"];
+    var glasses = facialAttributes["glasses"];
+
+    var param = {"sex" : gender, "inrange": "yes"};
+
+
+    callService(param);
+
+
+}
+
+function callService(param)
+{
+    console.time("VideoPlayservice");
+
+    //Send OCR Parsing request asynchronously
+    jQuery.ajax({
+        url: "http://localhost:3000/sendRequest",
+        data: JSON.stringify(param),
+        dataType: 'json',
+        cache: false,
+        contentType: "application/json; charset=utf-8",
+        type: 'POST',
+        success: function (result) {
+            //Get the parsed results, exit code and error message and details
+            console.log("***********"+result);
+            console.timeEnd("VideoPlayservice");
+
+        }
+    });
+}
+
+function getBase64Image(img) {
+    // Create an empty canvas element
+    var canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // Copy the image contents to the canvas
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+
+    // Get the data-URL formatted image
+    // Firefox supports PNG and JPEG. You could check img.src to
+    // guess the original format, but be aware the using "image/jpg"
+    // will re-encode the image.
+    var dataURL = canvas.toDataURL("image/png");
+    return dataURL.replace(/^data:image\/(png|jpg);octet-stream,/, "");
+    // return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
+function makeBlob(canvas) {
+        var dataURL = canvas.toDataURL();
+        var BASE64_MARKER = ';base64,';
+            if (dataURL.indexOf(BASE64_MARKER) == -1) {
+            var parts = dataURL.split(',');
+            var contentType = parts[0].split(':')[1];
+            var raw = decodeURIComponent(parts[1]);
+            return new Blob([raw], { type: contentType });
+            }
+
+        var parts = dataURL.split(BASE64_MARKER);
+        var contentType = parts[0].split(':')[1];
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], { type: contentType });
+        }
+
       </script>
       <div id="messages">
           <!-- <video id="videoplayer" width="480" height="360"></video> -->
           <video id="videoplayer" preload="false" autoplay="autoplay" controls=""></video>
       </div>
+      <div class="demo-frame">
+          <div class="demo-container">
+              <video id="video" width="600" height="600" preload autoplay loop muted></video>
+              <canvas id="canvas" width="600" height="600"></canvas>
+          </div>
+      </div>
+      <div>
+      <canvas id="canvas1" width="600" height="600" hidden="true"></canvas>
+        </div>
 
-      <!-- <div>
-          <button type="button" onclick="sendRequest()">Click Me!</button>
-      </div> -->
   </body>
 </html>
